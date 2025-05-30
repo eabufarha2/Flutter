@@ -1,6 +1,9 @@
+// lib/OutputScreen.dart
 import 'package:flutter/material.dart';
 
 class OutputScreen extends StatelessWidget {
+  static const routeName = '/output';
+
   final String? username;
   final String? password;
   final String? email;
@@ -40,11 +43,13 @@ class OutputScreen extends StatelessWidget {
             Text('Gender: $gender'),
             Text('Country: $country'),
             Text('Age: ${age?.round()}'),
-            Text('Selected Date: ${selectedDate?.toLocal().toString().split(' ')[0] ?? 'Not selected'}'),
+            Text(
+              'Selected Date: ${selectedDate?.toLocal().toString().split(' ')[0] ?? 'Not selected'}',
+            ),
             const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context); // Go back to the form screen
+                Navigator.pop(context);
               },
               child: const Text('Go Back'),
             ),

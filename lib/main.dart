@@ -1,5 +1,6 @@
-import 'package:auth_project/OutputScreen.dart';
+// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:auth_project/OutputScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +13,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Form Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyFormScreen(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        if (settings.name == OutputScreen.routeName) {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (ctx) => OutputScreen(
+                  username: args['username'] as String?,
+                  password: args['password'] as String?,
+                  email: args['email'] as String?,
+                  rememberMe: args['rememberMe'] as bool?,
+                  gender: args['gender'] as String?,
+                  country: args['country'] as String?,
+                  age: args['age'] as double?,
+                  selectedDate: args['selectedDate'] as DateTime?,
+                ),
+          );
+        }
+        // Fallback to home screen:
+        return MaterialPageRoute(builder: (_) => const MyFormScreen());
+      },
     );
   }
 }
@@ -38,32 +57,37 @@ class _MyFormScreenState extends State<MyFormScreen> {
   double _age = 18;
   DateTime? _selectedDate;
 
-  final List<String> _countries = ['Palestine', 'Jordan', 'Eygpt', 'Syrya', 'Iraq'];
+  final List<String> _countries = [
+    'Palestine',
+    'Jordan',
+    'Egypt',
+    'Syria',
+    'Iraq',
+  ];
   final List<String> _genders = ['Male', 'Female'];
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Navigator.push(
+      Navigator.pushNamed(
         context,
-        MaterialPageRoute(
-          builder: (context) => OutputScreen(
-            username: _username,
-            password: _password,
-            email: _email,
-            rememberMe: _rememberMe,
-            gender: _gender,
-            country: _country,
-            age: _age,
-            selectedDate: _selectedDate,
-          ),
-        ),
+        OutputScreen.routeName,
+        arguments: {
+          'username': _username,
+          'password': _password,
+          'email': _email,
+          'rememberMe': _rememberMe,
+          'gender': _gender,
+          'country': _country,
+          'age': _age,
+          'selectedDate': _selectedDate,
+        },
       );
     }
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
@@ -79,9 +103,7 @@ class _MyFormScreenState extends State<MyFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Form Demo'),
-      ),
+      appBar: AppBar(title: const Text('Flutter Form Demo')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -95,17 +117,14 @@ class _MyFormScreenState extends State<MyFormScreen> {
                   hintText: 'Enter your username',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your username';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _username = value;
-                },
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Please enter your username'
+                            : null,
+                onSaved: (v) => _username = v,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Password',
@@ -113,20 +132,16 @@ class _MyFormScreenState extends State<MyFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
                     return 'Please enter your password';
                   }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
+                  if (v.length < 6) return 'Password must be ≥ 6 characters';
                   return null;
                 },
-                onSaved: (value) {
-                  _password = value;
-                },
+                onSaved: (v) => _password = v,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -134,83 +149,62 @@ class _MyFormScreenState extends State<MyFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Please enter your email';
+                  if (!v.contains('@')) return 'Please enter a valid email';
                   return null;
                 },
-                onSaved: (value) {
-                  _email = value;
-                },
+                onSaved: (v) => _email = v,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               CheckboxListTile(
                 title: const Text('Remember me'),
                 value: _rememberMe,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _rememberMe = value ?? false;
-                  });
-                },
+                onChanged: (val) => setState(() => _rememberMe = val ?? false),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               Row(
-                children: <Widget>[
+                children: [
                   const Text('Gender:'),
-                  const SizedBox(width: 10.0),
-                  ..._genders.map((gender) => Row(
-                        children: <Widget>[
-                          Radio<String>(
-                            value: gender.toLowerCase(),
-                            groupValue: _gender,
-                            onChanged: (String? value) {
-                              setState(() {
-                                _gender = value;
-                              });
-                            },
-                          ),
-                          Text(gender),
-                          const SizedBox(width: 10.0),
-                        ],
-                      )),
+                  const SizedBox(width: 10),
+                  ..._genders.map(
+                    (g) => Row(
+                      children: [
+                        Radio<String>(
+                          value: g.toLowerCase(),
+                          groupValue: _gender,
+                          onChanged: (val) => setState(() => _gender = val),
+                        ),
+                        Text(g),
+                        const SizedBox(width: 10),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
                   labelText: 'Country',
                   border: OutlineInputBorder(),
                 ),
                 value: _country,
-                items: _countries.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _country = newValue;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a country';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _country = value;
-                },
+                items:
+                    _countries
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                onChanged: (val) => setState(() => _country = val),
+                validator:
+                    (v) =>
+                        (v == null || v.isEmpty)
+                            ? 'Please select a country'
+                            : null,
+                onSaved: (v) => _country = v,
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               Row(
-                children: <Widget>[
+                children: [
                   const Text('Age: '),
                   Expanded(
                     child: Slider(
@@ -219,17 +213,13 @@ class _MyFormScreenState extends State<MyFormScreen> {
                       max: 99,
                       divisions: 81,
                       label: _age.round().toString(),
-                      onChanged: (double value) {
-                        setState(() {
-                          _age = value;
-                        });
-                      },
+                      onChanged: (v) => setState(() => _age = v),
                     ),
                   ),
                   Text(_age.round().toString()),
                 ],
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
               InkWell(
                 onTap: () => _selectDate(context),
                 child: InputDecorator(
@@ -239,7 +229,7 @@ class _MyFormScreenState extends State<MyFormScreen> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
+                    children: [
                       Text(
                         _selectedDate == null
                             ? 'No date selected'
@@ -250,7 +240,7 @@ class _MyFormScreenState extends State<MyFormScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24.0),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _submitForm,
                 child: const Text('Submit'),
@@ -262,4 +252,3 @@ class _MyFormScreenState extends State<MyFormScreen> {
     );
   }
 }
-
