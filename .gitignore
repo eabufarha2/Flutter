@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+.dart_tool/
+.packages
+.pub/
+build/
+# IntelliJ / Android Studio
+.idea/
+*.iml
+# VS Code
+.vscode/
+# Xcode
+*.xcworkspace
+xcuserdata/
+# Android
+.gradle/
+local.properties
